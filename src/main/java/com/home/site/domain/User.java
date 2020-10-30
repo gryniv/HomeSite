@@ -4,6 +4,8 @@ import org.springframework.security.core.*;
 import org.springframework.security.core.userdetails.*;
 
 import javax.persistence.*;
+import javax.persistence.Transient;
+import javax.validation.constraints.*;
 import java.util.*;
 
 @Entity
@@ -12,13 +14,19 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @NotBlank(message = "Username cannot be empty")
     private String username;
+    @NotBlank(message = "Password cannot be empty")
     private String password;
+
+
+
     private boolean active;
-
+    @Email(message = "Email is not correct")
+    @NotBlank(message = "Email cannot be empty")
     private String email;
-    private String activationCode;
 
+    private String activationCode;
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
@@ -27,10 +35,11 @@ public class User implements UserDetails {
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
+
+
 
     public String getEmail() {
         return email;
