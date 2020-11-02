@@ -1,8 +1,8 @@
 package com.home.site.service;
 
 
-import com.home.site.domain.*;
 import com.home.site.domain.User;
+import com.home.site.domain.*;
 import com.home.site.repos.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.security.core.userdetails.*;
@@ -15,14 +15,23 @@ import java.util.stream.*;
 
 @Service
 public class UserService implements UserDetailsService {
-    @Autowired
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
+
+    private final MailSender mailSender;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    private MailSender mailSender;
+    MessageRepo messageRepo;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Value("${hostname}")
+    private String hostname;
+
+    public UserService(UserRepo userRepo, MailSender mailSender, PasswordEncoder passwordEncoder) {
+        this.userRepo = userRepo;
+        this.mailSender = mailSender;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -58,8 +67,9 @@ public class UserService implements UserDetailsService {
         if (!StringUtils.isEmpty(user.getEmail())) {
             String message = String.format(
                     "Hello, %s! \n" +
-                            "Welcome to Sweater. Please, visit next link: http://localhost:8080/activate/%s",
+                            "Welcome to Sweater. Please, visit next link: http://%s/activate/%s",
                     user.getUsername(),
+                    hostname,
                     user.getActivationCode()
             );
 
@@ -118,7 +128,7 @@ public class UserService implements UserDetailsService {
         }
 
         if (!StringUtils.isEmpty(password)) {
-            user.setPassword(password);
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
         userRepo.save(user);
@@ -126,5 +136,28 @@ public class UserService implements UserDetailsService {
         if (isEmailChanged) {
             sendMessage(user);
         }
+    }
+
+    public void subscribe(User currentUser, User user) {
+        user.getSubscribers().add(currentUser);
+
+        userRepo.save(user);
+    }
+
+    public void unsubscribe(User currentUser, User user) {
+        user.getSubscribers().remove(currentUser);
+
+        userRepo.save(user);
+    }
+    public void like(User currentUser, Message message) {
+        message.getLikes().add(currentUser);
+
+        messageRepo.save(message);
+    }
+
+    public void unlike(User currentUser,  Message message) {
+        message.getLikes().remove(currentUser);
+
+        messageRepo.save(message);
     }
 }

@@ -3,12 +3,13 @@ package com.home.site.controller;
 
 import com.home.site.domain.*;
 import com.home.site.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.*;
+import org.springframework.web.util.*;
 
 import java.util.Map;
 
@@ -16,8 +17,11 @@ import java.util.Map;
 @Controller
 @RequestMapping("/user")
 public class UserController {
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
@@ -64,6 +68,63 @@ public class UserController {
     ) {
         userService.updateProfile(user, password, email);
 
-        return "redirect:/user/profile";
+        return "redirect:/user/profile/";
+    }
+
+    @GetMapping("subscribe/{user}")
+    public String subscribe(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable User user
+    ) {
+        userService.subscribe(currentUser, user);
+
+        return "redirect:/user-messages/" + user.getId();
+    }
+
+    @GetMapping("unsubscribe/{user}")
+    public String unsubscribe(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable User user
+    ) {
+        userService.unsubscribe(currentUser, user);
+
+        return "redirect:/user-messages/" + user.getId();
+    }
+
+
+
+//    @GetMapping("unlike")
+//    public String unsubscribe(
+//            @AuthenticationPrincipal User currentUser,
+//            RedirectAttributes redirectAttributes,
+//            @PathVariable Message message
+//            @RequestHeader(required = false) String referer
+//    ) {
+//        userService.unlike(currentUser, message);
+//
+//        UriComponents components = UriComponentsBuilder.fromHttpUrl(referer).build();
+//
+//        components.getQueryParams()
+//                .forEach(redirectAttributes::addAttribute);
+//
+//        return "redirect:" + components.getPath();
+//    }
+
+    @GetMapping("{type}/{user}/list")
+    public String userList(
+            Model model,
+            @PathVariable User user,
+            @PathVariable String type
+    ) {
+        model.addAttribute("userChannel", user);
+        model.addAttribute("type", type);
+
+        if ("subscriptions".equals(type)) {
+            model.addAttribute("users", user.getSubscriptions());
+        } else {
+            model.addAttribute("users", user.getSubscribers());
+        }
+
+        return "subscriptions";
     }
 }
