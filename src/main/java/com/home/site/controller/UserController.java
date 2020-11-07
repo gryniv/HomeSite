@@ -3,15 +3,11 @@ package com.home.site.controller;
 
 import com.home.site.domain.*;
 import com.home.site.service.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.*;
-import org.springframework.web.util.*;
 
-import java.util.Map;
 
 
 @Controller
@@ -23,34 +19,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping
-    public String userList(Model model) {
-        model.addAttribute("users", userService.findAll());
-
-        return "userList";
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("{user}")
-    public String userEditForm(@PathVariable User user, Model model) {
-        model.addAttribute("user", user);
-        model.addAttribute("roles", Role.values());
-
-        return "userEdit";
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping
-    public String userSave(
-            @RequestParam String username,
-            @RequestParam Map<String, String> form,
-            @RequestParam("userId") User user
-    ) {
-        userService.saveUser(user, username, form);
-
-        return "redirect:/user";
-    }
 
     @GetMapping("profile")
     public String getProfile(Model model, @AuthenticationPrincipal User user) {
@@ -90,25 +58,6 @@ public class UserController {
 
         return "redirect:/user-messages/" + user.getId();
     }
-
-
-
-//    @GetMapping("unlike")
-//    public String unsubscribe(
-//            @AuthenticationPrincipal User currentUser,
-//            RedirectAttributes redirectAttributes,
-//            @PathVariable Message message
-//            @RequestHeader(required = false) String referer
-//    ) {
-//        userService.unlike(currentUser, message);
-//
-//        UriComponents components = UriComponentsBuilder.fromHttpUrl(referer).build();
-//
-//        components.getQueryParams()
-//                .forEach(redirectAttributes::addAttribute);
-//
-//        return "redirect:" + components.getPath();
-//    }
 
     @GetMapping("{type}/{user}/list")
     public String userList(

@@ -1,8 +1,8 @@
 <#import "parts/common.ftlh" as c>
-<#import "parts/cv.ftlh" as cv1>
+<#import "parts/cv.ftlh" as cv>
 
 <@c.page>
 
-<@cv1.cv>
-</@cv1.cv>
+<@cv.cv>
+</@cv.cv>
 </@c.page>

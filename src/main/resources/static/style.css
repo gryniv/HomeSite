@@ -1,3 +1,7 @@
 body {
-    color: darkgrey;
+    background-color: aliceblue;
+}
+
+.turbolinks-progress-bar {
+    height: 2px;
 }

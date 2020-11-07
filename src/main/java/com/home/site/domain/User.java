@@ -1,33 +1,14 @@
 package com.home.site.domain;
 
-import org.springframework.security.core.*;
-import org.springframework.security.core.userdetails.*;
+import com.home.site.domain.def.DefaultUser;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
 import java.util.*;
 
 @Entity
 @Table(name = "usr")
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    @NotBlank(message = "Username cannot be empty")
-    private String username;
-    @NotBlank(message = "Password cannot be empty")
-    private String password;
-    private boolean active;
-
-    @Email(message = "Email is not correct")
-    @NotBlank(message = "Email cannot be empty")
-    private String email;
-    private String activationCode;
-
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
-    private Set<Role> roles;
+public class User extends DefaultUser {
+    private String name;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Message> messages;
@@ -38,7 +19,7 @@ public class User implements UserDetails {
             joinColumns = {@JoinColumn(name = "channel_id")},
             inverseJoinColumns = {@JoinColumn(name = "subscriber_id")}
     )
-    private Set<User> subscribers = new HashSet<>();
+    private Set<DefaultUser> subscribers = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
@@ -46,107 +27,15 @@ public class User implements UserDetails {
             joinColumns = {@JoinColumn(name = "subscriber_id")},
             inverseJoinColumns = {@JoinColumn(name = "channel_id")}
     )
-    private Set<User> subscriptions = new HashSet<>();
+    private Set<DefaultUser> subscriptions = new HashSet<>();
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id);
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(id);
+    public void setName(String name) {
+        this.name = name;
     }
-
-    public boolean isAdmin() {
-        return roles.contains(Role.ADMIN);
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return isActive();
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getRoles();
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getActivationCode() {
-        return activationCode;
-    }
-
-    public void setActivationCode(String activationCode) {
-        this.activationCode = activationCode;
-    }
-
     public Set<Message> getMessages() {
         return messages;
     }
@@ -155,19 +44,19 @@ public class User implements UserDetails {
         this.messages = messages;
     }
 
-    public Set<User> getSubscribers() {
+    public Set<DefaultUser> getSubscribers() {
         return subscribers;
     }
 
-    public void setSubscribers(Set<User> subscribers) {
+    public void setSubscribers(Set<DefaultUser> subscribers) {
         this.subscribers = subscribers;
     }
 
-    public Set<User> getSubscriptions() {
+    public Set<DefaultUser> getSubscriptions() {
         return subscriptions;
     }
 
-    public void setSubscriptions(Set<User> subscriptions) {
+    public void setSubscriptions(Set<DefaultUser> subscriptions) {
         this.subscriptions = subscriptions;
     }
 }
